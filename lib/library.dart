@@ -6,4 +6,6 @@ export 'src/ui/classes/NotifierBuilder.dart';
 
 export 'src/ui/features/NavigatorEx/NavigatorEx.dart';
 
+export 'src/ui/pages/TransparentPage.dart';
+
 export 'src/typedef.dart';
