@@ -1,0 +1,19 @@
+name: true_core_flutter
+description:
+version: 0.0.1
+homepage:
+publish_to: none
+
+environment:
+  sdk: ">=2.15.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+    
+  true_core:
+    git:
+      url: https://github.com/TrueCollaboration/true_core.dart.git
+    
+  # DateFormat
+  intl: any
