@@ -33,11 +33,16 @@ class _NotifierSubscriptionListenable<T> implements NotifierSubscription<T> {
   }
 
   @override
+  NotifierSubscription<T> execute() {
+    callback(listener.value);
+    return this;
+  }
+
+  @override
   void cancel() {
     if(function != null) {
       listener.removeListener(function!);
       function = null;
     }
   }
-
 }

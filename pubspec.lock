@@ -65,7 +65,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "7a31bb4bb306405f8c32740649d23f96ec4d380e"
+      resolved-ref: fd118dad302265bbe91ba6312d029344d3b60db5
       url: "https://github.com/TrueCollaboration/true_core.dart.git"
     source: git
     version: "0.0.1"
