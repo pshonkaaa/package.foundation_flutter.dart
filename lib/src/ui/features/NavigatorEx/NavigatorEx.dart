@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:true_core/library.dart';
 import 'package:true_core_flutter/src/typedef.dart';
 
 import 'internal/NavigatorExStateImpl.dart';
@@ -18,7 +19,7 @@ class NavigatorEx extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  NavigatorState createState() => NavigatorState();
+  NavigatorExStateImpl createState() => NavigatorExStateImpl();
 
 
   static NavigatorExState? of(BuildContext context) {
@@ -38,10 +39,11 @@ class NavigatorEx extends StatefulWidget {
 }
 
 abstract class NavigatorExState {
+  BuildContext get context;
 
   bool allowedPopLast = false;
-
-  BuildContext get context;
+  
+  INotifier<int> get pagesCountState;
 
   /// Pages count
   int get count;

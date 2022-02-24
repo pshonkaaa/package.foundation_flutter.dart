@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:true_core/library.dart';
 import 'package:true_core_flutter/src/typedef.dart';
 import 'package:true_core_flutter/src/ui/features/NavigatorEx/NavigatorEx.dart';
 
 class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExState {
-
   // EXTERNAL
   //==========================================================================\\
   @override
@@ -15,6 +15,9 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
 
   @override
   bool allowedPopLast = false;
+
+  @override
+  final Notifier<int> pagesCountState = Notifier(value: 0);
 
   @override
   int get count => pages.length;
@@ -37,6 +40,7 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
   void initState() {
     super.initState();
     pages.add(new _PageEntry(widget.initialPage));
+    pagesCountState.value = pages.length;
   }
 
   @override
@@ -64,7 +68,7 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
   }) {
     int i = pages.length;
     while(i != 0) {
-      var entry = pages[--i];
+      final entry = pages[--i];
       if(predicate != null) {
         if(predicate(entry.page))
           return entry.page;
@@ -101,9 +105,12 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
     } else {
       toDelete.add(pages.last);
       pages.removeLast();
-    } pages.add(entry);
+    }
+    
+    pages.add(entry);
+
     _onChangePagesHistory(() {
-      for(var entry in toDelete)
+      for(final entry in toDelete)
         //TODO
         entry.completer.complete(null);
     });
@@ -119,7 +126,7 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
     final entry = new _PageEntry(page);
     int i = pages.length;
     while(i != 0) {
-      var oldEntry = pages[--i];
+      final oldEntry = pages[--i];
       if(predicate != null) {
         if(predicate(oldEntry.page)) {
           pages[i] = entry;
@@ -154,10 +161,10 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
       return Future.value();
     if(!allowedPopLast && pages.length == 1)
       return Future.value();
-    // var toPop = <_PageEntry>[];
-    // var needle = pages.last;
-    // var page = history.lastWhere((e) => e.page == needle);
-    // var start = history.indexOf(page);
+    // final toPop = <_PageEntry>[];
+    // final needle = pages.last;
+    // final page = history.lastWhere((e) => e.page == needle);
+    // final start = history.indexOf(page);
     // if(onlySurface)
     //   start++;
     // toPop.addAll(history.getRange(min(start, history.length), history.length));
@@ -181,7 +188,7 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
     Future<dynamic>? future;
     int i = pages.length;
     while(i != 0) {
-      var entry = pages[--i];
+      final entry = pages[--i];
       if(predicate != null) {
         if(predicate(entry.page)) {
           pages.remove(entry);
@@ -237,6 +244,7 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
     if(WidgetsBinding.instance!.schedulerPhase == SchedulerPhase.idle) {
       setState(() {
         bNavigatorChanged = true;
+        pagesCountState.value = pages.length;
         callback();
       });
     } else {
@@ -247,6 +255,7 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
         }
         setState(() {
           bNavigatorChanged = true;
+          pagesCountState.value = pages.length;
           callback();
         });
       });
@@ -279,7 +288,7 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
   }
 
   bool _onPopPage(Route route, dynamic result) {
-    var popped = route.didPop(result);
+    final popped = route.didPop(result);
     if(popped) {
       _onChangePagesHistory(() {
         //TODO
@@ -327,10 +336,6 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
 
 
 
-enum _PageType {
-  mine,
-  // custom,
-}
 
 class _PageEntry {
   final Page<dynamic> page;
@@ -338,6 +343,18 @@ class _PageEntry {
   // Route<dynamic>? route;
   _PageEntry(this.page);
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class _Observer extends NavigatorObserver {
@@ -349,8 +366,8 @@ class _Observer extends NavigatorObserver {
     // _assertCheck(previousRoute);
     _assertCheck(route);
     
-    // var newEntry = _createPage(_PageType.mine, route);
-    // var prevEntry = _extractPage(previousRoute);
+    // final newEntry = _createPage(_PageType.mine, route);
+    // final prevEntry = _extractPage(previousRoute);
 
     // if(previousRoute == null) {
     //   that.history.add(newEntry);
@@ -365,9 +382,9 @@ class _Observer extends NavigatorObserver {
     // debugger();
     _assertCheck(oldRoute);
     _assertCheck(newRoute);
-    // var oldEntry = _extractPage(oldRoute);
-    // var newEntry = _extractPage(newRoute);
-    // var index = that.history.indexOf(oldEntry);
+    // final oldEntry = _extractPage(oldRoute);
+    // final newEntry = _extractPage(newRoute);
+    // final index = that.history.indexOf(oldEntry);
     // that.history[index] = newEntry;
     // debugger();
     // print(123);
@@ -377,7 +394,7 @@ class _Observer extends NavigatorObserver {
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     // _assertCheck(route);
     // _assertCheck(previousRoute);
-    // var page = that.pages.singleWhere((e) => e == route.settings, orElse: () => null);
+    // final page = that.pages.singleWhere((e) => e == route.settings, orElse: () => null);
     // if(page != null) {
     //   that.pages.remove(page);
     // } that.history.removeWhere((e) => e.route == route);
@@ -427,7 +444,7 @@ class _Observer extends NavigatorObserver {
   //   Page entry;
   //   if(route.settings is Page)
   //     entry = route.settings as Page;
-  //   var p = new _PageEntry(type, entry);
+  //   final p = new _PageEntry(type, entry);
   //   p.route = route;
   //   return p;
   // }
