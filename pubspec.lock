@@ -60,15 +60,22 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
+  synchronized:
+    dependency: transitive
+    description:
+      name: synchronized
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0+2"
   true_core:
     dependency: "direct main"
     description:
       path: "."
       ref: HEAD
-      resolved-ref: fd118dad302265bbe91ba6312d029344d3b60db5
+      resolved-ref: "1571325368b347a957fdcb325be452ceab726b48"
       url: "https://github.com/TrueCollaboration/true_core.dart.git"
     source: git
-    version: "0.0.1"
+    version: "0.0.3"
   typed_data:
     dependency: transitive
     description:
