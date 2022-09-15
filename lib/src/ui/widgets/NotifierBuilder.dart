@@ -4,17 +4,19 @@ import 'package:true_core/library.dart';
 typedef BuilderFunction<T>    = Widget Function(BuildContext context, T value);
 typedef ConditionFunction<T>  = bool Function(T value);
 
+// TODO REWRITE
 class NotifierBuilder<T> extends StatefulWidget {
   /// Widget builder
-  final BuilderFunction<T>    builder;
+  final BuilderFunction<T> builder;
+
   /// Condition for builder. If condition() returns true, then it would call builder()
   final ConditionFunction<T>? condition;
-  final INotifier<T>          notifier;
+  final INotifier<T> notifier;
 
   NotifierBuilder({
-    required  this.notifier,
+    required this.notifier,
     this.condition,
-    required  this.builder,
+    required this.builder,
   });
 
   @override
@@ -22,11 +24,11 @@ class NotifierBuilder<T> extends StatefulWidget {
 }
 
 class _NotifierBuilderState<T> extends State<NotifierBuilder<T>> {
-  final NotifierStorage storage = new NotifierStorage();
+  final storage = NotifierStorage();
 
-  BuilderFunction<T>    get   builder     => widget.builder;
-  ConditionFunction<T>? get   condition   => widget.condition;
   INotifier<T>          get   notifier    => widget.notifier;
+  ConditionFunction<T>? get   condition   => widget.condition;
+  BuilderFunction<T>    get   builder     => widget.builder;
 
   late T lastValue;
   
@@ -39,22 +41,26 @@ class _NotifierBuilderState<T> extends State<NotifierBuilder<T>> {
   @override
   void didUpdateWidget(NotifierBuilder<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.notifier != notifier) {
+    if (oldWidget.notifier != notifier ||
+        oldWidget.condition != condition || 
+        oldWidget.builder != builder) {
       _unsubscribe(); 
       _subscribe();
     }
   }
 
   @override
-  Widget build(BuildContext context) {
-    // bool bRebuild = true;
-    // if(condition != null)
-    //   bRebuild = condition(notifier.value()) ?? true;
+  Widget build(BuildContext context) => builder(context, lastValue);
+  
+  // @override
+  // Widget build(BuildContext context) {
+  //   // bool bRebuild = true;
+  //   // if(condition != null)
+  //   //   bRebuild = condition(notifier.value()) ?? true;
 
-    // if(bRebuild)
-    return builder(context, lastValue);
-    // return Container();
-  }
+  //   // if(bRebuild)
+  //   return builder(context, lastValue);
+  // }
 
   void _subscribe() {
     notifier.bind((value) {
@@ -64,7 +70,7 @@ class _NotifierBuilderState<T> extends State<NotifierBuilder<T>> {
       //   return;
 
       if(bRebuild) {
-        WidgetsBinding.instance!.endOfFrame.then((v) {
+        WidgetsBinding.instance.endOfFrame.then((v) {
           if(mounted)
             setState(() { lastValue = value; });
         });

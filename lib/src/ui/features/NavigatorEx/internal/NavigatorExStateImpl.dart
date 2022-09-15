@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -8,19 +9,92 @@ import 'package:true_core_flutter/src/typedef.dart';
 import 'package:true_core_flutter/src/ui/features/NavigatorEx/NavigatorEx.dart';
 
 class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExState {
+  @override
+  void initState() {
+    super.initState();
+
+    this.canPopLast = widget.canPopLast;
+
+    _pages.add(new _PageEntry(widget.initialPage));
+    _onChangePagesHistory(() {});
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+
+  @override
+  Widget build(BuildContext ctx) {
+    context = ctx;
+    if(bNavigatorChanged) {
+      navigator = Navigator(
+        key: key,
+        pages: _pages.map((e) => e.page).toList(),
+        onPopPage: (route, result) => _onPopPage(route, result),
+        observers: [
+          new _Observer(this),
+        ],
+        reportsRouteUpdateToEngine: true,
+      );
+      ServicesBinding.instance.addPostFrameCallback((timeStamp) {
+        widget.onChangeContext?.call(key.currentContext!, this);
+      });
+      bNavigatorChanged = false;
+    }
+
+    return WillPopScope(
+      child: navigator,
+      onWillPop: _onPressBackButton,
+    );
+  }
+
+  bool _onPopPage(Route route, dynamic result) {
+    final popped = route.didPop(result);
+    if(popped) {
+      _onChangePagesHistory(() {
+        final entry = _pages.tryFirstWhere((e) => e.page == route.settings);
+        if(entry == null)
+          return;
+        entry.completer.complete(null);
+        _pages.remove(entry);
+      });
+    } return popped;
+  }
+
+  Future<bool> _onPressBackButton() async {
+    bool isClosing = _pages.isEmpty || _pages.length == 1;
+    if(!isClosing) {
+      _onChangePagesHistory(() {
+        _pages.last.completer.complete(null);
+        _pages.removeLast();
+      });
+    } else {
+      if(!canPopLast)
+        return false;
+      widget.onCloseApp?.call();
+    }
+    return isClosing;
+  }
+
+
   // EXTERNAL
   //==========================================================================\\
   @override
   late BuildContext context;
 
   @override
-  bool allowedPopLast = false;
+  bool canPopLast = false;
 
   @override
-  final Notifier<int> pagesCountState = Notifier(value: 0);
+  int get count => _pages.length;
 
   @override
-  int get count => pages.length;
+  Iterable<Page> get pages => _pages.map((e) => e.page).toList();
+
+  @override
+  final Notifier<Iterable<Page>> pagesState = Notifier(value: []);
 
   @override
   NavigatorState? get debugNavigator => key.currentState;
@@ -30,24 +104,10 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
   // INTERNAL
   //==========================================================================\\
   final GlobalKey<NavigatorState> key = new GlobalKey();
-  final List<_PageEntry> pages = [];
+  final List<_PageEntry> _pages = [];
   late Navigator navigator;
   bool bNavigatorChanged = true;
   //==========================================================================\\
-
-
-  @override
-  void initState() {
-    super.initState();
-    pages.add(new _PageEntry(widget.initialPage));
-    pagesCountState.value = pages.length;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
 
   @override
   bool contains<T extends Page>({
@@ -66,9 +126,9 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
     bool throughTree = false,
     PagePredicate? predicate,
   }) {
-    int i = pages.length;
+    int i = _pages.length;
     while(i != 0) {
-      final entry = pages[--i];
+      final entry = _pages[--i];
       if(predicate != null) {
         if(predicate(entry.page))
           return entry.page;
@@ -81,86 +141,89 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
   }
 
   @override
-  Future<dynamic> push(Page page) {
+  Future<RESULT?> push<RESULT>(Page page) async {
     final entry = new _PageEntry(page);
-    pages.add(entry);
-    _onChangePagesHistory(() {});
-    return entry.completer.future;
+    _onChangePagesHistory(() {
+      _pages.add(entry);
+    });
+    return await entry.completer.future as RESULT?;
   }
 
   @override
-  Future<dynamic> pushReplacement(
+  Future<RESULT?> pushReplacement<RESULT>(
     Page page, {
       bool replaceAll = false,
-  }) {
+  }) async {
     int i = 0;
-    while(replaceAll && pages.length > 1 && i++ > 10)
+    while(replaceAll && _pages.length > 1 && i++ > 10)
       pop(onlySurface: true);
 
     final entry = new _PageEntry(page);
-    final List<_PageEntry> toDelete = [];
-    if(replaceAll) {
-      toDelete.addAll(pages);
-      pages.clear();
-    } else {
-      toDelete.add(pages.last);
-      pages.removeLast();
-    }
-    
-    pages.add(entry);
 
     _onChangePagesHistory(() {
+      final List<_PageEntry> toDelete = [];
+      if(replaceAll) {
+        toDelete.addAll(_pages);
+        _pages.clear();
+      } else {
+        toDelete.add(_pages.last);
+        _pages.removeLast();
+      }
+    
+      _pages.add(entry);
+
       for(final entry in toDelete)
-        //TODO
         entry.completer.complete(null);
     });
-    return entry.completer.future;
+    return await entry.completer.future as RESULT?;
   }
 
   @override
-  Future<dynamic> pushReplacementConcrete<T extends Page>(
+  Future<RESULT?> pushReplacementConcrete<T extends Page, RESULT>(
     Page page, {
       bool throughTree = false,
       PagePredicate? predicate,
-  }) {
+  }) async {
     final entry = new _PageEntry(page);
-    int i = pages.length;
+    int i = _pages.length;
     while(i != 0) {
-      final oldEntry = pages[--i];
+      final oldEntry = _pages[--i];
       if(predicate != null) {
         if(predicate(oldEntry.page)) {
-          pages[i] = entry;
+          _pages[i] = entry;
           _onChangePagesHistory(() {
-            //TODO
             oldEntry.completer.complete(null);
           });
           break;
         }
       } else {
         if(oldEntry.page is T) {
-          pages[i] = entry;
+          _pages[i] = entry;
           _onChangePagesHistory(() {
-            //TODO
             oldEntry.completer.complete(null);
           });
           break;
         }
       } if(!throughTree)
         break;
-    } return entry.completer.future;
+    } return await entry.completer.future as RESULT?;
   }
 
   @override
-  Future<dynamic> pop({
+  Future<void> pop<RESULT>({
+    RESULT? result,
     bool onlySurface = true,
-  }) {
+  }) async {
     //TODO NON-REALIZED
     if(onlySurface)
       return Future.value();
-    if(pages.length == 0)
+    if(_pages.length == 0)
       return Future.value();
-    if(!allowedPopLast && pages.length == 1)
+    if(!canPopLast && _pages.length == 1)
       return Future.value();
+
+    // CUT-OUT
+    //--------------------------------------------------------------------------
     // final toPop = <_PageEntry>[];
     // final needle = pages.last;
     // final page = history.lastWhere((e) => e.page == needle);
@@ -170,31 +233,33 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
     // toPop.addAll(history.getRange(min(start, history.length), history.length));
     // for(int i = 0; i < toPop.length; i++)
     //   key.currentState.pop();
-    final entry = pages.last;
-    pages.remove(entry);
+    //--------------------------------------------------------------------------
+    // CUT-OUT
+
+    final entry = _pages.last;
     _onChangePagesHistory(() {
-      //TODO
-      entry.completer.complete(null);
+      _pages.remove(entry);
+      entry.completer.complete(result);
     });
-    return entry.completer.future;
+    return await entry.completer.future;
   }
 
   @override
-  Future<dynamic> popConcrete<T extends Page>({
+  Future<RESULT?> popConcrete<T extends Page, RESULT>({
+    RESULT? result,
     bool singleMatch = true,
     bool throughTree = false,
     PagePredicate? predicate,
-  }) {
-    Future<dynamic>? future;
-    int i = pages.length;
+  }) async {
+    Future? future;
+    int i = _pages.length;
     while(i != 0) {
-      final entry = pages[--i];
+      final entry = _pages[--i];
       if(predicate != null) {
         if(predicate(entry.page)) {
-          pages.remove(entry);
           _onChangePagesHistory(() {
-            //TODO
-            entry.completer.complete(null);
+            _pages.remove(entry);
+            entry.completer.complete(result);
           });
           future = entry.completer.future;
           if(singleMatch)
@@ -202,10 +267,9 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
         }
       } else {
         if(entry.page is T) {
-          pages.remove(entry);
           _onChangePagesHistory(() {
-            //TODO
-            entry.completer.complete(null);
+            _pages.remove(entry);
+            entry.completer.complete(result);
           });
           if(singleMatch)
             break;
@@ -213,7 +277,7 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
       } if(!throughTree)
         break;
     }
-    return future ?? Future.value();
+    return await future as RESULT?;
   }
 
 
@@ -240,80 +304,28 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
   // }
 
 
-  void _onChangePagesHistory(Function callback) {
-    if(WidgetsBinding.instance!.schedulerPhase == SchedulerPhase.idle) {
-      setState(() {
-        bNavigatorChanged = true;
-        pagesCountState.value = pages.length;
-        callback();
-      });
-    } else {
-      WidgetsBinding.instance!.addPostFrameCallback((_) {
+  Future<void> _onChangePagesHistory(Function callback) async {
+    callback();
+
+    final completer = Completer();
+    if(WidgetsBinding.instance.schedulerPhase != SchedulerPhase.idle) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         if(!mounted) {
           throw(new Exception("UNHANDLED CODE EXECUTION"));
           // return;
-        }
-        setState(() {
-          bNavigatorChanged = true;
-          pagesCountState.value = pages.length;
-          callback();
-        });
+        } completer.complete();
       });
-    }
+    } else completer.complete();
+
+    await completer.future;
+
+    setState(() {
+      bNavigatorChanged = true;
+      pagesState.value = _pages.map((e) => e.page).toList();
+    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    this.context = context;
-    if(bNavigatorChanged) {
-      navigator = Navigator(
-        key: key,
-        pages: pages.map((e) => e.page).toList(),
-        onPopPage: (route, result) => _onPopPage(route, result),
-        observers: [
-          new _Observer(this),
-        ],
-        reportsRouteUpdateToEngine: true,
-      );
-      ServicesBinding.instance!.addPostFrameCallback((timeStamp) {
-        widget.onChangeContext?.call(key.currentContext!, this);
-      });
-      bNavigatorChanged = false;
-    }
-
-    return WillPopScope(
-      child: navigator,
-      onWillPop: _onPressBackButton,
-    );
-  }
-
-  bool _onPopPage(Route route, dynamic result) {
-    final popped = route.didPop(result);
-    if(popped) {
-      _onChangePagesHistory(() {
-        //TODO
-        pages.last.completer.complete(null);
-        pages.removeLast();
-      });
-    } return popped;
-  }
-
-  Future<bool> _onPressBackButton() async {
-    bool closing = pages.isEmpty || pages.length == 1;
-    if(!closing) {
-      _onChangePagesHistory(() {
-        //TODO
-        pages.last.completer.complete(null);
-        pages.removeLast();
-      });
-    } return closing;
-  }
 }
-
-
-
-
-
 
 
 
@@ -339,7 +351,7 @@ class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExStat
 
 class _PageEntry {
   final Page<dynamic> page;
-  final Completer<dynamic> completer = new Completer();
+  final Completer completer = new Completer();
   // Route<dynamic>? route;
   _PageEntry(this.page);
 }

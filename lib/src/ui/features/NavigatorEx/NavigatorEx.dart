@@ -6,14 +6,17 @@ import 'internal/NavigatorExStateImpl.dart';
 
 typedef void OnChangeContextFunction(BuildContext context, NavigatorExState state);
 
-@Deprecated("Need to review; final result = await navigator.pop();")
 class NavigatorEx extends StatefulWidget {
+  final bool canPopLast;
   final PopPageCallback onPopPage;
+  final VoidCallback? onCloseApp;
   final OnChangeContextFunction? onChangeContext;
   final Page initialPage;
   const NavigatorEx({
     Key? key,
+    this.canPopLast = true,
     required this.onPopPage,
+    this.onCloseApp,
     required this.onChangeContext,
     required this.initialPage,
   }) : super(key: key);
@@ -41,12 +44,14 @@ class NavigatorEx extends StatefulWidget {
 abstract class NavigatorExState {
   BuildContext get context;
 
-  bool allowedPopLast = false;
-  
-  INotifier<int> get pagesCountState;
+  bool canPopLast = false;
 
   /// Pages count
   int get count;
+
+  Iterable<Page> get pages;
+  
+  INotifier<Iterable<Page>> get pagesState;
 
   NavigatorState? get debugNavigator;
 
@@ -65,24 +70,26 @@ abstract class NavigatorExState {
     PagePredicate? predicate,
   });
 
-  Future<dynamic> push(Page page);
+  Future<RESULT?> push<RESULT>(Page page);
 
-  Future<dynamic> pushReplacement(
+  Future<RESULT?> pushReplacement<RESULT>(
     Page page, {
       bool replaceAll = false,
   });
 
-  Future<dynamic> pushReplacementConcrete<T extends Page>(
+  Future<RESULT?> pushReplacementConcrete<T extends Page, RESULT>(
     Page page, {
       bool throughTree = false,
       PagePredicate? predicate,
   });
 
-  Future<dynamic> pop({
+  Future<void> pop<RESULT>({
+    RESULT? result,
     bool onlySurface = true,
   });
 
-  Future<dynamic> popConcrete<T extends Page>({
+  Future<RESULT?> popConcrete<T extends Page, RESULT>({
+    RESULT? result,
     bool singleMatch = true,
     bool throughTree = false,
     PagePredicate? predicate,
