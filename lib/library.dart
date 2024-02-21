@@ -1,4 +1,4 @@
-library truecollaboration.pshondation.core_flutter;
+library library;
 
 export 'src/extensions/color.dart';
 
