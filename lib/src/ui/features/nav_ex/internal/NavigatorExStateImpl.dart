@@ -4,8 +4,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:pshondation/library.dart';
-import 'package:pshondation_flutter/src/typedef.dart';
-import 'package:pshondation_flutter/src/ui/features/nav_ex/navigator_ex.dart';
+import 'package:foundation_flutter/src/typedef.dart';
+import 'package:foundation_flutter/src/ui/features/nav_ex/navigator_ex.dart';
 
 class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExState {
   @override
