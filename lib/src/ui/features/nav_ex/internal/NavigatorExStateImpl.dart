@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:true_core/library.dart';
-import 'package:true_core_flutter/src/typedef.dart';
-import 'package:true_core_flutter/src/ui/features/NavigatorEx/NavigatorEx.dart';
+import 'package:foundation/library.dart';
+import 'package:foundation_flutter/src/typedef.dart';
+import 'package:foundation_flutter/src/ui/features/nav_ex/navigator_ex.dart';
 
 class NavigatorExStateImpl extends State<NavigatorEx> implements NavigatorExState {
   @override

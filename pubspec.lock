@@ -30,6 +30,15 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  foundation:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: cea8c35047443264471b09abd48422aa20ed9014
+      url: "https://github.com/pshonkaaa/package.foundation.dart.git"
+    source: git
+    version: "0.1.0"
   intl:
     dependency: "direct main"
     description:
@@ -91,15 +100,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.0"
-  true_core:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "412c7e33b4dadbadc2ed57bf14ac78940efcef27"
-      url: "https://github.com/TrueCollaboration/package.true_core.dart.git"
-    source: git
-    version: "0.0.8"
   vector_math:
     dependency: transitive
     description:

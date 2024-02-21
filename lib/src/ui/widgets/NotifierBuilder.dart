@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:true_core/library.dart';
+import 'package:foundation/library.dart';
 
 typedef BuilderFunction<T>    = Widget Function(BuildContext context, T value);
 typedef ConditionFunction<T>  = bool Function(T value);

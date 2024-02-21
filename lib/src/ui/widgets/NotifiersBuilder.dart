@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:true_core/library.dart';
+import 'package:foundation/library.dart';
 
 class NotifiersBuilder<T> extends StatefulWidget {
   /// Widget builder

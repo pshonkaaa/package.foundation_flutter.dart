@@ -1,4 +1,4 @@
-name: true_core_flutter
+name: foundation_flutter
 description:
 version: 0.0.3
 homepage:
@@ -11,9 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
     
-  true_core:
+  foundation:
     git:
-      url: https://github.com/TrueCollaboration/package.true_core.dart.git
+      url: https://github.com/pshonkaaa/package.foundation.dart.git
     
-  # DateFormat
   intl: any

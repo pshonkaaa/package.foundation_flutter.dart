@@ -1,10 +1,10 @@
-library truecollaboration.true_core.core_flutter;
+library truecollaboration.foundation.core_flutter;
 
-export 'src/extensions/ColorExtension.dart';
+export 'src/extensions/color.dart';
 
-export 'src/features/Notifier/extensions/ListenableExtension.dart';
+export 'src/features/notifier/extensions/ListenableExtension.dart';
 
-export 'src/ui/features/NavigatorEx/NavigatorEx.dart';
+export 'src/ui/features/nav_ex/navigator_ex.dart';
 
 export 'src/ui/pages/TransparentPage.dart';
 

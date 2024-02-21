@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:true_core/library.dart';
+import 'package:foundation/library.dart';
 
 extension ListenableExtension<T> on ValueListenable<T> {
   void addTo(NotifierStorage storage, NotifierCallback<T> callback) {
