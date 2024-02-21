@@ -1,4 +1,4 @@
-name: foundation_flutter
+name: pshondation_flutter
 description:
 version: 0.0.3
 homepage:
@@ -11,8 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
     
-  foundation:
+  pshondation:
     git:
-      url: https://github.com/pshonkaaa/package.foundation.dart.git
+      url: https://github.com/pshonkaaa/package.pshondation.dart.git
     
   intl: any
