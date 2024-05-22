@@ -1,5 +1,5 @@
 import 'package:flutter/rendering.dart';
-import 'dart:html' as html;
+import 'package:web/web.dart' as html;
 
 import 'package:flutter/widgets.dart';
 
@@ -15,7 +15,7 @@ class DomMouseEventsConnector extends StatefulWidget {
     required this.child,
   });
 
-  final html.Element domElement;
+  final html.HTMLElement domElement;
   final OnChangeFocus? onChangeFocus;
   final FocusDeterminant focusDeterminant;
   final Widget child;
